@@ -64,9 +64,9 @@ add_custom_target(wifi_txt_binary ALL DEPENDS ${WIFI_OBJ})
 target_sources(nano_os PRIVATE ${WIFI_OBJ})
 add_dependencies(nano_os wifi_txt_binary)
 
-# Disable USB device stdio because the USB port is now a Host
+# Use UART stdio for debug output because USB is used as a host for USB drive access
 pico_enable_stdio_usb(nano_os 0)
-pico_enable_stdio_uart(nano_os 0)
+pico_enable_stdio_uart(nano_os 1)
 
 # Add our project directory to include paths
 target_include_directories(nano_os PRIVATE
