@@ -2,4 +2,3 @@ build
 !.vscode/*
 pico-sdk/
 *.exe
-wifi.txt

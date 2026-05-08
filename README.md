@@ -56,13 +56,14 @@ The firmware includes a command-line interface with built-in file editing capabi
 
 ### WiFi Configuration
 
-The `wifi.txt` file contains WiFi credentials for connecting to your network. 
+The `wifi.txt` file contains default WiFi credentials that are embedded in the firmware at compile time.
+
+**Default credentials**: The firmware will use the credentials from `wifi.txt` automatically on first boot.
 
 **To update WiFi settings:**
-1. Edit `wifi.txt` with your WiFi SSID and password
-2. Copy the updated `wifi.txt` file to a USB drive
-3. Connect the USB drive to the Pico
-4. The file will automatically overwrite the existing configuration in the firmware image
+1. Edit `wifi.txt` with your WiFi SSID and password (SSID on line 1, password on line 2)
+2. Recompile and flash the firmware
+3. **OR** copy an updated `wifi.txt` file to a USB drive and insert it during boot (this will override the embedded defaults and save to internal flash)
 
 ## Project Structure
 

@@ -9,6 +9,9 @@
 #include "tusb.h"
 #include "ff.h"
 
+// Include embedded wifi.txt
+#include "wifi.txt.h"
+
 // Simple heartbeat task to show the OS is running
 static uint32_t print_last_wake = 0;
 void print_task(void) {
@@ -84,6 +87,73 @@ void check_usb_for_config(void) {
     }
 }
 
+void load_default_wifi_config(void) {
+    // Only load defaults if no valid config exists
+    if (sys_config.magic == CONFIG_MAGIC && strlen(sys_config.wifi_ssid) > 0) {
+        printf("Valid Wi-Fi config already exists, skipping defaults.\n");
+        return;
+    }
+
+    printf("Loading default Wi-Fi credentials from embedded wifi.txt...\n");
+
+    // Get embedded wifi.txt content
+    extern const char wifi_txt[];
+    extern const size_t wifi_txt_size;
+
+    const char *content = wifi_txt;
+    size_t content_size = wifi_txt_size;
+
+    // Parse the embedded content (similar to USB parsing)
+    char line[64];
+    int line_idx = 0;
+    int char_idx = 0;
+
+    for (size_t i = 0; i < content_size && i < sizeof(line) - 1; i++) {
+        if (content[i] == '\n' || content[i] == '\r') {
+            line[char_idx] = '\0';
+
+            if (line_idx == 0 && strlen(line) > 0) {
+                // SSID (line 1)
+                strncpy(sys_config.wifi_ssid, line, sizeof(sys_config.wifi_ssid) - 1);
+                printf("Default SSID: %s\n", sys_config.wifi_ssid);
+            } else if (line_idx == 1 && strlen(line) > 0) {
+                // Password (line 2)
+                strncpy(sys_config.wifi_password, line, sizeof(sys_config.wifi_password) - 1);
+                printf("Default Password: [HIDDEN]\n");
+            }
+
+            line_idx++;
+            char_idx = 0;
+
+            // Skip any additional CR/LF characters
+            while (i + 1 < content_size && (content[i + 1] == '\n' || content[i + 1] == '\r')) {
+                i++;
+            }
+        } else {
+            line[char_idx++] = content[i];
+        }
+    }
+
+    // Handle last line if no trailing newline
+    if (char_idx > 0 && line_idx < 2) {
+        line[char_idx] = '\0';
+        if (line_idx == 0) {
+            strncpy(sys_config.wifi_ssid, line, sizeof(sys_config.wifi_ssid) - 1);
+            printf("Default SSID: %s\n", sys_config.wifi_ssid);
+        } else if (line_idx == 1) {
+            strncpy(sys_config.wifi_password, line, sizeof(sys_config.wifi_password) - 1);
+            printf("Default Password: [HIDDEN]\n");
+        }
+    }
+
+    if (strlen(sys_config.wifi_ssid) > 0) {
+        printf("Default Wi-Fi credentials loaded successfully!\n");
+        config_save();
+    } else {
+        printf("Failed to load default Wi-Fi credentials.\n");
+    }
+}
+
 int main() {
     stdio_init_all();
     sleep_ms(2000);
@@ -91,6 +161,9 @@ int main() {
 
     // Initialize Config Store
     config_load();
+
+    // Load default Wi-Fi config if needed
+    load_default_wifi_config();
 
     // Initialize USB Host
     usb_fs_init();

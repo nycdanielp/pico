@@ -49,6 +49,9 @@ add_executable(nano_os
     ${TUSB_FATFS_DIR}/ffunicode.c
 )
 
+# Embed wifi.txt as binary data
+pico_embed_file(nano_os wifi.txt)
+
 # Disable USB device stdio because the USB port is now a Host
 pico_enable_stdio_usb(nano_os 0)
 pico_enable_stdio_uart(nano_os 0)
