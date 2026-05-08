@@ -85,13 +85,13 @@ void check_usb_for_config(void) {
 }
 
 void load_default_wifi_config(void) {
-    // Only load defaults if no valid config exists
-    if (sys_config.magic == CONFIG_MAGIC && strlen(sys_config.wifi_ssid) > 0) {
-        printf("Valid Wi-Fi config already exists, skipping defaults.\n");
+    uint32_t current_marker = get_firmware_marker();
+    if (sys_config.magic == CONFIG_MAGIC && sys_config.firmware_marker == current_marker) {
+        printf("Valid Wi-Fi config exists for this firmware, skipping defaults.\n");
         return;
     }
 
-    printf("Loading default Wi-Fi credentials from embedded wifi.txt...\n");
+    printf("Fresh flash or new firmware detected, loading embedded wifi.txt defaults...\n");
 
     // Include embedded wifi.txt content
     extern const char _binary_wifi_txt_start[];

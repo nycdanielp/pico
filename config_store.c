@@ -13,6 +13,16 @@
 
 sys_config_t sys_config;
 
+uint32_t get_firmware_marker(void) {
+    const char *build_info = __DATE__ " " __TIME__;
+    uint32_t hash = 2166136261u;
+    for (const char *p = build_info; *p; ++p) {
+        hash ^= (uint32_t)(unsigned char)*p;
+        hash *= 16777619u;
+    }
+    return hash;
+}
+
 void config_load(void) {
     // Read from memory-mapped flash
     const uint8_t *flash_target_contents = (const uint8_t *) (XIP_BASE + FLASH_TARGET_OFFSET);
@@ -24,6 +34,7 @@ void config_load(void) {
     } else {
         // No valid config found
         sys_config.magic = 0;
+        sys_config.firmware_marker = 0;
         memset(sys_config.wifi_ssid, 0, sizeof(sys_config.wifi_ssid));
         memset(sys_config.wifi_password, 0, sizeof(sys_config.wifi_password));
     }
@@ -31,6 +42,7 @@ void config_load(void) {
 
 void config_save(void) {
     sys_config.magic = CONFIG_MAGIC;
+    sys_config.firmware_marker = get_firmware_marker();
 
     // Buffer to hold a full page (required by flash programming)
     uint8_t buffer[FLASH_PAGE_SIZE];
