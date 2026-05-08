@@ -81,6 +81,7 @@ void check_usb_for_config(void) {
         }
     } else {
         printf("No USB drive detected during boot.\n");
+        printf("Continuing with UART debug output; USB host mode remains idle until a drive is attached.\n");
     }
 }
 
