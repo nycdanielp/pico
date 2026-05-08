@@ -50,15 +50,19 @@ add_executable(nano_os
 )
 
 # Embed wifi.txt as binary data using objcopy
+set(WIFI_OBJ ${CMAKE_CURRENT_BINARY_DIR}/wifi_txt.o)
 add_custom_command(
-    OUTPUT wifi_txt.o
-    COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-littlearm -B arm wifi.txt wifi_txt.o
-    DEPENDS wifi.txt
+    OUTPUT ${WIFI_OBJ}
+    COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-littlearm -B arm wifi.txt ${WIFI_OBJ}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/wifi.txt
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_custom_target(wifi_txt_binary ALL DEPENDS ${WIFI_OBJ})
+
 # Add the embedded object to the target
-target_sources(nano_os PRIVATE wifi_txt.o)
+target_sources(nano_os PRIVATE ${WIFI_OBJ})
+add_dependencies(nano_os wifi_txt_binary)
 
 # Disable USB device stdio because the USB port is now a Host
 pico_enable_stdio_usb(nano_os 0)
