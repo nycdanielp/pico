@@ -9,9 +9,6 @@
 #include "tusb.h"
 #include "ff.h"
 
-// Include embedded wifi.txt
-#include "wifi.txt.h"
-
 // Simple heartbeat task to show the OS is running
 static uint32_t print_last_wake = 0;
 void print_task(void) {
@@ -96,12 +93,13 @@ void load_default_wifi_config(void) {
 
     printf("Loading default Wi-Fi credentials from embedded wifi.txt...\n");
 
-    // Get embedded wifi.txt content
-    extern const char wifi_txt[];
-    extern const size_t wifi_txt_size;
+    // Include embedded wifi.txt content
+    extern const char _binary_wifi_txt_start[];
+    extern const char _binary_wifi_txt_end[];
+    extern const size_t _binary_wifi_txt_size;
 
-    const char *content = wifi_txt;
-    size_t content_size = wifi_txt_size;
+    const char *content = _binary_wifi_txt_start;
+    size_t content_size = (size_t)(_binary_wifi_txt_end - _binary_wifi_txt_start);
 
     // Parse the embedded content (similar to USB parsing)
     char line[64];
@@ -109,7 +107,7 @@ void load_default_wifi_config(void) {
     int char_idx = 0;
 
     for (size_t i = 0; i < content_size && i < sizeof(line) - 1; i++) {
-        if (content[i] == '\n' || content[i] == '\r') {
+        if (content[i] == '\n' || content[i] == '\r' || content[i] == 0) {
             line[char_idx] = '\0';
 
             if (line_idx == 0 && strlen(line) > 0) {

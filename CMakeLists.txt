@@ -49,8 +49,16 @@ add_executable(nano_os
     ${TUSB_FATFS_DIR}/ffunicode.c
 )
 
-# Embed wifi.txt as binary data
-pico_embed_file(nano_os wifi.txt)
+# Embed wifi.txt as binary data using objcopy
+add_custom_command(
+    OUTPUT wifi_txt.o
+    COMMAND ${CMAKE_OBJCOPY} -I binary -O elf32-littlearm -B arm wifi.txt wifi_txt.o
+    DEPENDS wifi.txt
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Add the embedded object to the target
+target_sources(nano_os PRIVATE wifi_txt.o)
 
 # Disable USB device stdio because the USB port is now a Host
 pico_enable_stdio_usb(nano_os 0)
@@ -59,6 +67,7 @@ pico_enable_stdio_uart(nano_os 0)
 # Add our project directory to include paths
 target_include_directories(nano_os PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
     ${TUSB_FATFS_DIR}
 )
 
